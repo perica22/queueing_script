@@ -16,13 +16,13 @@ def background_task(task):
     Function sends an email and simulates delay
     """
     print("Task running")
-
+    email = task['user']['email']
     content = create_email_content(task['user'])
     with smtplib.SMTP("smtp.gmail.com", 587) as mail:
         mail.ehlo()
         mail.starttls()
-        mail.login('perica.test22@gmail.com', 'Test_account1232')
-        mail.sendmail('perica.test22@gmail.com', 'pprokic22@gmail.com', content)
+        mail.login('perica.test22@gmail.com', 'Test_account123')
+        mail.sendmail('perica.test22@gmail.com', email, content)
 
     delay = 2
     print(f"Simulating a {delay} second delay")
