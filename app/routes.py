@@ -1,19 +1,32 @@
+import json
+
 from app import APP
 from app import R
 from app import Q
 
-from flask import request
+from flask import request, jsonify, make_response
 
 from app.tasks import background_task
+from app.register_service import RegisterService
 
 
-@APP.route("/task", methods=["POST"])
-def add_task():
+@APP.route("/register", methods=["POST"])
+def register():
     request_json = request.get_json()
-    if request_json:
 
-        job = Q.enqueue(background_task, request_json)
-        q_len = len(Q)
-        return f"Task ({job.id}) added to queue at {job.enqueued_at}, queue size is {q_len}"
+    register_service = RegisterService(payload=request_json)
 
-    return "No value for count provided"
+    errors = register_service.validate_user()
+    if errors:
+        return jsonify({"errors": errors}), 400
+
+    user = register_service.create()
+
+    result = register_service.create_response()
+    job = Q.enqueue(background_task, result)
+    print(f"Task ({job.id}) added to queue at {job.enqueued_at}, queue size is {len(Q)}")
+
+    response = make_response(json.dumps(result), 200)
+    response.mimetype = "application/json"
+
+    return response
